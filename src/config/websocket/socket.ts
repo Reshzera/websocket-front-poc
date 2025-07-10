@@ -1,10 +1,18 @@
-import { io } from "socket.io-client";
+// src/services/socket.ts
+import { Client } from "@stomp/stompjs";
 
-const SOCKET_URL = "http://localhost:3000";
+const createStompClient = () => {
+  const client = new Client({
+    brokerURL: "ws://localhost:8080/ws",
+    reconnectDelay: 5000,
+    heartbeatIncoming: 4000,
+    heartbeatOutgoing: 4000,
+    debug: (str) => {
+      console.log("[STOMP DEBUG]", str);
+    },
+  });
 
-const createSocket = () => {
-  const socket = io(SOCKET_URL);
-  return socket;
+  return client;
 };
 
-export { createSocket, SOCKET_URL };
+export default createStompClient;

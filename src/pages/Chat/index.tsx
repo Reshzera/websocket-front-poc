@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./styles.module.scss";
-import { createSocket } from "../../config/websocket/socket";
+import { useWebsocketStomp } from "../../hooks/useWebsocketStomp";
 
 type Message = {
   senderId: string;
@@ -8,7 +8,7 @@ type Message = {
 };
 
 const Chat: React.FC = () => {
-  const socket = createSocket();
+  const { send, subscribe, clientId } = useWebsocketStomp();
   const [messages, setMessages] = useState<Message[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -18,18 +18,12 @@ const Chat: React.FC = () => {
     const value = inputRef.current?.value.trim();
 
     if (value) {
-      socket.emit("message", {
-        senderId: socket.id,
+      const msg: Message = {
+        senderId: clientId,
         text: value,
-      });
+      };
 
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          senderId: socket.id ?? "",
-          text: value,
-        },
-      ]);
+      send("/app/chat", JSON.stringify(msg));
 
       if (inputRef.current) {
         inputRef.current.value = "";
@@ -38,14 +32,13 @@ const Chat: React.FC = () => {
   };
 
   useEffect(() => {
-    socket.on("message", (message: Message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
+    subscribe("/topic/messages", (message) => {
+      if (message.body) {
+        const received: Message = JSON.parse(message.body);
+        setMessages((prev) => [...prev, received]);
+      }
     });
-
-    return () => {
-      socket.off("message");
-    };
-  }, [socket]);
+  }, [subscribe]);
 
   return (
     <div className={styles.container}>
@@ -55,7 +48,7 @@ const Chat: React.FC = () => {
           <div
             key={idx}
             className={`${styles.message} ${
-              msg.senderId === socket.id
+              msg.senderId === clientId
                 ? styles.yourMessage
                 : styles.otherMessage
             }`}
