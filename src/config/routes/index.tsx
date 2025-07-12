@@ -2,6 +2,7 @@ import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Chat from "../../pages/Chat";
 import ChatTemplate from "../templates/ChatTemplate";
+import ChatSocketIo from "../../pages/ChatSocketIO";
 
 const router = createBrowserRouter([
   {
@@ -10,6 +11,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Chat />,
+      },
+      {
+        path: "/socket-io",
+        element: <ChatSocketIo />,
       },
     ],
   },
