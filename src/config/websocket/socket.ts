@@ -1,9 +1,12 @@
 // src/services/socket.ts
 import { Client } from "@stomp/stompjs";
 
+const AUTH_TOKEN = "token-auth";
+
 const createStompClient = () => {
   const client = new Client({
-    brokerURL: "ws://localhost:8080/ws",
+    webSocketFactory: () =>
+      new WebSocket(`ws://localhost:8080/ws?token=${AUTH_TOKEN}`),
     reconnectDelay: 5000,
     heartbeatIncoming: 4000,
     heartbeatOutgoing: 4000,
